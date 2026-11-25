@@ -10,33 +10,60 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CheckRouteImport } from './routes/check'
+import { Route as CheckIndexRouteImport } from './routes/check.index'
+import { Route as CheckIdRouteImport } from './routes/check.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckRoute = CheckRouteImport.update({
+  id: '/check',
+  path: '/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckIndexRoute = CheckIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CheckRoute,
+} as any)
+const CheckIdRoute = CheckIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CheckRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/check': typeof CheckRouteWithChildren
+  '/check/$id': typeof CheckIdRoute
+  '/check/': typeof CheckIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/check/$id': typeof CheckIdRoute
+  '/check': typeof CheckIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/check': typeof CheckRouteWithChildren
+  '/check/$id': typeof CheckIdRoute
+  '/check/': typeof CheckIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/check' | '/check/$id' | '/check/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/check/$id' | '/check'
+  id: '__root__' | '/' | '/check' | '/check/$id' | '/check/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CheckRoute: typeof CheckRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +75,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/check': {
+      id: '/check'
+      path: '/check'
+      fullPath: '/check'
+      preLoaderRoute: typeof CheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/check/': {
+      id: '/check/'
+      path: '/'
+      fullPath: '/check/'
+      preLoaderRoute: typeof CheckIndexRouteImport
+      parentRoute: typeof CheckRoute
+    }
+    '/check/$id': {
+      id: '/check/$id'
+      path: '/$id'
+      fullPath: '/check/$id'
+      preLoaderRoute: typeof CheckIdRouteImport
+      parentRoute: typeof CheckRoute
+    }
   }
 }
 
+interface CheckRouteChildren {
+  CheckIdRoute: typeof CheckIdRoute
+  CheckIndexRoute: typeof CheckIndexRoute
+}
+
+const CheckRouteChildren: CheckRouteChildren = {
+  CheckIdRoute: CheckIdRoute,
+  CheckIndexRoute: CheckIndexRoute,
+}
+
+const CheckRouteWithChildren = CheckRoute._addFileChildren(CheckRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CheckRoute: CheckRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
