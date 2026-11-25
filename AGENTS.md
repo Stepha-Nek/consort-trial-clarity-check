@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- All data access goes through `src/lib/api` (types/mock/http, switched by VITE_USE_MOCK); components use TanStack Query and never call fetch — so the FastAPI backend can replace the mock without UI changes.
+- Checklist items are rendered only from API responses, never hardcoded in components — checklists change between CONSORT versions.
+- Item status is always shown as icon + colour + label via `src/lib/status.ts` — accessibility.
